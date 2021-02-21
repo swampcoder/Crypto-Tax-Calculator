@@ -1,10 +1,5 @@
 package ctc.transactions;
 
-import ctc.enums.Currency;
-import ctc.enums.Exchange;
-import ctc.enums.TradeType;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,7 +11,16 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import ctc.enums.Currency;
+import ctc.enums.Exchange;
+import ctc.enums.TradeType;
 
 /**
  * Transaction:
@@ -39,9 +43,12 @@ public class Transaction implements Serializable, Comparable<Transaction> {
     private BigDecimal feeAmount;
     private BigDecimal feeRate;
     private BigDecimal fee;
-    private final Currency NATIVE = Currency.CAD;
+    private final Currency NATIVE = Currency.USD;
     private DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-
+    
+    private Object linkedObj = null;
+    private String rawLine = null;
+    
     public Transaction() {}
 
     public Transaction(Transaction other) {
@@ -59,6 +66,8 @@ public class Transaction implements Serializable, Comparable<Transaction> {
         this.feeAmount = other.feeAmount;
         this.feeRate = other.feeRate;
         this.fee = other.fee;
+        this.linkedObj = other.getLinkedObject();
+        this.rawLine = other.getRawLine();
     }
 
     public Transaction(String [] fromFile) {
@@ -87,6 +96,25 @@ public class Transaction implements Serializable, Comparable<Transaction> {
         return exchange;
     }
 
+    public void setLinkedObj(Object o) 
+    {
+    	this.linkedObj = o;
+    }
+    
+    public Object getLinkedObject() 
+    {
+    	return linkedObj;
+    }
+    
+    public String getRawLine() 
+    {
+    	return rawLine;
+    }
+    
+    public void setRawLine(String _rawLine) 
+    {
+    	this.rawLine = _rawLine;
+    }
 
     // Date
     public Transaction date (String date) {
@@ -98,6 +126,15 @@ public class Transaction implements Serializable, Comparable<Transaction> {
         }
         this.date = parsedDate;
         return this;
+    }
+    
+    public Transaction date(long time)
+    {
+    	Calendar c = Calendar.getInstance();
+    	c.setTimeInMillis(time);
+    	c.setTimeZone(TimeZone.getTimeZone("UTC"));
+    	date = c.getTime();
+    	return this;
     }
 
     public Date getDate() {
@@ -406,10 +443,15 @@ public class Transaction implements Serializable, Comparable<Transaction> {
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 
             while ((line = in.readLine()) != null) {
-                JSONObject parser = new JSONObject(line);
-                // System.out.println(parser.toString());        // Output json
-                price = parser.getJSONArray("Data").getJSONObject(0).get("close").toString();
-//                System.out.println(date + ": " + major + "/" + minor + " - " + price);
+            	 try {
+                     JSONObject parser = new JSONObject(line);
+                     System.out.println(parser.toString()); // Output json
+                     price = parser.getJSONArray("Data").getJSONObject(0).get("close").toString();
+          
+                  } catch (JSONException e) {
+        
+                     return null;
+                  }
             }
             in.close();
         } else {

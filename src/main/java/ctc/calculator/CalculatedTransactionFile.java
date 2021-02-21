@@ -1,13 +1,19 @@
 package ctc.calculator;
 
-import ctc.calculator.Asset;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
+
 import ctc.enums.Currency;
 import ctc.enums.TradeType;
 import ctc.transaction.files.TransactionFile;
 import ctc.transactions.Transaction;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 /**
  * CalculatedTransaction:
@@ -124,6 +130,7 @@ public class CalculatedTransactionFile extends TransactionFile {
                 }
 
             } catch (NoSuchElementException e) {
+            	System.out.println("Curr=" + currencySold);
                 System.err.println("No history of " + currencySold + " being bought before being sold ("
                         + amountSold.toString() + " at " + rateSold.toString() + "). Is this a fork or token?)");
                 return rateSold.multiply(amountSold);
@@ -172,5 +179,25 @@ public class CalculatedTransactionFile extends TransactionFile {
         additional[2][cells-1] = String.format("%.2f", totalGainLoss.subtract(totalFees));
 
         super.writeToCsv(fileName, additional);
+    }
+    
+    public static void main(String[] args) throws IOException 
+    {
+    	Transaction btc1 = new Transaction();
+    	Transaction btc2 = new Transaction();
+    	btc1.type(TradeType.BUY).amount(0.5).localRate(100).major("BTC").minor("USD").date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30)).feeAmount(0).feeCurrency("USD").build();
+    	btc2.type(TradeType.SELL).amount(0.4).localRate(4000).major("BTC").minor("USD").date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(10)).feeAmount(0).feeCurrency("USD").build();
+    	
+    	ArrayList<Transaction> list = new ArrayList<Transaction>();
+    	list.add(btc1);
+    	list.add(btc2);
+    	CalculatedTransactionFile ctc = new CalculatedTransactionFile(list);
+    	ctc.outputAssets();
+    	
+    	for(Transaction ct : ctc.getTransactions()) 
+    	{
+    		CalculatedTransaction calcTx = (CalculatedTransaction) ct;
+    		System.out.println("GAIN=" + calcTx.getGainLoss());
+    	}
     }
 }

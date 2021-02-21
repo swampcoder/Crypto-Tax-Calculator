@@ -64,7 +64,7 @@ public class Asset implements Comparable<Asset> {
     }
 
     public String toString() {
-        return    "Date Bought:  " + dateBought +
+        return    "\nDate Bought:  " + dateBought +
                 "\nCurrency:     " + currency +
                 "\nAmount:       " + amount +
                 "\nRate:         " + rate;
