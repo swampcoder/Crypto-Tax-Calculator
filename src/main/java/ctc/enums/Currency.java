@@ -12,7 +12,9 @@ public enum Currency {
     ARK,STRAT,ENG,POWR,BTS,WINGS,XCP,RLC,GNO,GNT,SC,_1ST,VTR,PART,SNT,PLU,PIVX,
     FUN,LUN,MANA,SNGLS,UBQ,HMQ,XAUR,SALT,SWT,DAO,ETC,BAT,ICN,TRST,TAAS,BAY,REP,XMR,ADA,
     GAS,KNC,QTUM,AE,AST,EOS,SUB,MKR,TheDAO,NxC,ARC,ST,Xaurum,EMV,Guppy,ETB,NDC,
-    ETBS,RDN,PPT,AMPX;
+    ETBS,RDN,PPT,AMPX,Unicorns,BSV;
+	
+	
 
 	public static Currency lookup(String coin) 
 	{
@@ -20,7 +22,17 @@ public enum Currency {
 		{
 			coin = "_" + coin;
 		}
-		return synonymFilter(Currency.valueOf(coin));
+		Currency currency = null;
+		try
+		{
+			currency = Currency.valueOf(coin);
+		}
+		catch(IllegalArgumentException e) 
+		{
+			e.printStackTrace();
+		}
+		if(currency == null) System.err.println("NULL FOR COIN=" + coin);
+		return synonymFilter(currency);
 	}
 	
     /**
